@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Create and manage coroutines"""
+"""
+Create and manage coroutines
+import wait_n from 1-concurrent_coroutines
+"""
 import asyncio
 import time
 from typing import List
