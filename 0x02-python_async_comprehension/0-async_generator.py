@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Modules used to create and manage coroutines and offers functions
 for generating random numbers
