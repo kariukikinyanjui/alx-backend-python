@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+'''
+Implementing the test_org method
+'''
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
@@ -71,7 +74,8 @@ class TestGithubOrgClient(unittest.TestCase):
             with patch(
                     'client.GithubOrgClient._public_repos_url',
                     new_callable=PropertyMock) as mock_public_repos_url:
-                mock_public_repos_url.return_value = "https://api.github.com/orgs/test_org/repos"
+                mock_public_repos_url.return_value = "\
+                        https://api.github.com/orgs/test_org/repos"
                 client = GithubOrgClient("test_org")
                 result = client.public_repos
 
