@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+'''
+Common testing patterns such as mocking, parameterizations
+and fixtures
+'''
 import unittest
 from parameterized import parameterized
 from utils import access_nested_map, get_json, memoize
