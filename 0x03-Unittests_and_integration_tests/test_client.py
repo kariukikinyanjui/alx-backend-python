@@ -105,7 +105,7 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-@parameterize_class(
+@parameterized_class(
         ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'), [
             (org_payload, repos_payload, expected_repos, apache2_repos)]
 )
