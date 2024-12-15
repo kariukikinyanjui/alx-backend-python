@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
+from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -102,6 +103,54 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient("test_org")
         result = client.has_license(repo, license_key)
         self.assertEqual(result, expected)
+
+
+@parameterize_class(
+        ('org_payload', 'repos_payload', 'expected_repos', 'apache2_repos'), [
+            (org_payload, repos_payload, expected_repos, apache2_repos)]
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    '''
+    Integration test class for GithubOrgClient.public_repos.
+    '''
+
+    @classmethod
+    def setUpClass(cls):
+        '''
+        Set up class method to mock requests.get to return example payloads.
+        '''
+        cls.get_patcher = patch('client.requests.get')
+
+        cls.mock_get = cls.get_patcher.start()
+        cls.mock_get.side_effect = cls.get_json_side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        '''
+        Tear down class method to stop the patcher.
+        '''
+        cls.get_patcher.stop()
+
+    @staticmethod
+    def get_json_side_effect(url):
+        '''
+        Side effect function to return the correct payload based on the URL
+        '''
+        if url == "https://api.github.com/orgs/google":
+            return Mock(json=lambda: org_payload)
+        elif url == "https://api.github.com/orgs/google/repos":
+            return Mock(json=lambda: repos_payload)
+        return Mock(json=lambda: None)
+
+    def test_public_repos(self):
+        '''
+        Test that GithubOrgClient.public_repos returns the
+        correct list of repos.
+        '''
+        client = GithubOrgClient("google")
+        self.assertEqual(client.public_repos(), expected_repos)
+        self.assertEqual(client.public_repos(
+            license="apache-2.0"), apache2_repos)
 
 
 if __name__ == "__main__":
