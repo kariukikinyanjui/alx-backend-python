@@ -12,6 +12,10 @@ class User(AbstractUser):
         default='guest'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    password = models.CharField(max_lenth=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+
 
 
     class Meta:
@@ -29,6 +33,7 @@ class Conversation(models.Model):
     conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(User, related_name='conversation')
     created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
 
 
     class Meta:
