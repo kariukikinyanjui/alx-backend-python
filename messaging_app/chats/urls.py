@@ -10,5 +10,4 @@ router.register(r'messages', MessageViewSet, basename='message')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('conversations/<str:conversation_pk>/messages/', message_list, name='conversation-messages'),
 ]
