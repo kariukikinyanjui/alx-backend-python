@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from .models import Conversation
 from .serializers import ConversationSerializer, ConversationCreateSerializer, MessageSerializer, MessageCreateSerializer
@@ -8,6 +9,9 @@ from rest_framework.generics import get_object_or_404
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.prefetch_related('participants', 'messages').all()
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['participants__user_id', 'created_at']
+    ordering_fields = ['created_at']
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -23,6 +27,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.select_related('conversation', 'sender').all()
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['sender__user_id', 'send_at']
+    ordering_fields = ['sent_at']
 
     def get_serializer_class(self):
         if self.action == 'create':

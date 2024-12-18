@@ -4,7 +4,7 @@ from .views import ConversationViewSet, MessageViewSet
 
 
 router = DefaultRouter()
-router.register(r'conversation', ConversationViewSet, basename='conversation')
+router.register(r'conversations', ConversationViewSet, basename='conversation')
 
 
 message_list = MessageViewSet.as_view({'get': 'list', 'post': 'create'})
