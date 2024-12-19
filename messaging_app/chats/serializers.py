@@ -26,7 +26,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UserSerializer(many=True, read_only=True)
+    participants = UserSerializers(many=True, read_only=True)
     messages = MessageSerializer(many=True, read_only=True)
     participant_count = serializers.SerializerMethodField()
 

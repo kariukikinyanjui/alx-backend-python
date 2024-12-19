@@ -12,7 +12,7 @@ class User(AbstractUser):
         default='guest'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    password = models.CharField(max_lenth=255)
+    password = models.CharField(max_length=255)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
 
@@ -45,7 +45,7 @@ class Conversation(models.Model):
 
 
 class Message(models.Model):
-    message_id = models.UUIDField(primary_keys=True, default=uuid.uuid4, editable=False)
+    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_sent')
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     message_body = models.TextField()

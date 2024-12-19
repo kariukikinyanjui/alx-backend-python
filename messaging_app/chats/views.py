@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from .models import Conversation
-from .serializers import ConversationSerializer, ConversationCreateSerializer, MessageSerializer, MessageCreateSerializer
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework.generics import get_object_or_404
 
 
