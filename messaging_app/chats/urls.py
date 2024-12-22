@@ -3,6 +3,7 @@ from django.urls import path, include
 from .views import ConversationViewSet, MessageViewSet
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
+from . import views
 
 
 router = routers.DefaultRouter()
