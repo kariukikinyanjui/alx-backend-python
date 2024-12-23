@@ -7,6 +7,8 @@ from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsParticipantOfConversation
+from .filters import MessageFilter
+from .rest_framework.pagination import PageNumberPagination
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -34,6 +36,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return Conversation.objects.filter(participants=self.request.user)
 
 
+class MessagePagination(PageNumberPagination):
+    page_size = 20 # Fetch 20 messages per page
+
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.select_related('conversation', 'sender').all()
@@ -43,6 +49,9 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+    pagination_class = MessagePagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MessageFilter
 
     def get_serializer_class(self):
         if self.action == 'create':
