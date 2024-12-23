@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsParticipantOfConversation
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -12,6 +14,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['participants__user_id', 'created_at']
     ordering_fields = ['created_at']
+
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -22,7 +27,12 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serliazer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         conversation = seiralizer.save()
-        return Response(ConversationSerializer(conversation).data, status=status.HTTP_201_CREATED)
+        return Response(ConversationSerializer(conversation).data, status=status                        .HTTP_201_CREATED)
+
+    def get_queryset(self):
+        # Only show conversations where the user is a participant
+        return Conversation.objects.filter(participants=self.request.user)
+
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -30,6 +40,9 @@ class MessageViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['sender__user_id', 'send_at']
     ordering_fields = ['sent_at']
+
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -51,3 +64,16 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=request.user, conversation=conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def get_query_set(self):
+        # Only show messages in conversations the user participates in
+        return Message.objects.filter(conversation_participants=self.request.user)
+
+    def perform_create(self, serializer):
+        '''
+        Ensure the user is a participant of the conversation when
+        sending a message
+        '''
+        conversation = serializer.validated_data['conversation']
+        if self.request.user not in conversation.participants.all():
+            raise PermissionDenied("You are not a participant of this conversation.")
+        serializer.save(sender=self.request.user)
