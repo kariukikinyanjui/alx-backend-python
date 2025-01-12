@@ -26,7 +26,7 @@ class MessageHistory(models.Model):
 
 class Notification(models.Model):
     user = models.ForeignKey(User, related_name="notifications", on_delete=models.CASCADE)
-    message = models.OneToOneField(Message, on_delete=models.CASCADE)
+    message = models.OneToOneField(Message, related_name="notification", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
 
