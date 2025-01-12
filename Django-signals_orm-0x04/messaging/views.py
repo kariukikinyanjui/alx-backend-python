@@ -28,3 +28,15 @@ def delete_user(request):
     user = request.user
     user.delete() # Triggers the post_delete signal
     return redirect("home") # Redirect to the homepage after deletion
+
+
+def conversation_view(request):
+    '''
+    Display messages in a threaded conversation format.
+    '''
+    # Retrieve all root messages(parent_message=None) and their replies
+    messages = Message.objects.filter(parent_message=None).select_related(
+        "sender", "receiver"
+    ).prefetch_related("replies__sender", "replies__receiver")
+
+    return render(request,"conversation.html", {"messages": messages})
