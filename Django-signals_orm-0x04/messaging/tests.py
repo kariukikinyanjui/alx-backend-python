@@ -42,3 +42,21 @@ class MessageEditTestCase(TestCase):
         self.assertTrue(self.message.edited)
         self.assertIsNotNone(self.message.edited_at)
         self.assertEqual(self.message.edited_by, self.user1)
+
+
+class DeleteUserTestCase(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="password1")
+        self.user2 = User.objects.create_user(username="user2", password="password2")
+        self.message = Message.objects.create(sender=self.user1, receiver=self.user2, content="Test message")
+        self.notification = Notification.objects.create(user=self.user2, message=self.message)
+
+    def test_user_deletion_cleans_up_related_data(self):
+        # Verify initial counts
+        self.assertEqual(Message.objects.count(), 1)
+        self.assertEqual(Notification.objects.count(), 1)
+
+        # Delete user1 and check cleanup
+        self.user1.delete()
+        self.assertEqual(Message.objects.count(), 0)
+        self.assertEqual(Notification.objects.count(), 0)
