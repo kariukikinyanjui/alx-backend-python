@@ -60,3 +60,37 @@ class DeleteUserTestCase(TestCase):
         self.user1.delete()
         self.assertEqual(Message.objects.count(), 0)
         self.assertEqual(Notification.objects.count(), 0)
+
+
+class ThreadedConversationTestCase(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="password1")
+        self.user2 = User.objects.create_user(username="user2", password="password2")
+
+        # Create root message
+        self.root_message = Message.objects.create(
+            sender=self.user1, receiver=self.user2, content="Root message"
+        )
+
+        # Create replies
+        self.reply1 = Message.objects.create(
+            sender=self.user2, receiver=self.user1, content="First reply", parent_message=self.root_message
+        )
+        self.reply2 = Message.objects.create(
+            sender=self.user1, receiver=self.user2, content="Second reply", parent_message=self.root_message
+        )
+        self.sub_reply = Message.objects.create(
+            sender=self.user2, receiver=self.user1, content="Sub-reply", parent_message=self.reply1
+        )
+
+    def test_threaded_conversation(self):
+        # Test recursive retrieval of all replies
+        replies = self.root_message.get_all_replies()
+        self.assertEqual(len(replies), 3)  # All replies, including sub-replies
+
+        # Test prefetching and select_related
+        with self.assertNumQueries(2):  # Ensure query optimization
+            messages = Message.objects.filter(parent_message=None).select_related(
+                "sender", "receiver"
+            ).prefetch_related("replies__sender", "replies__receiver")
+            list(messages)  # Trigger evaluation
