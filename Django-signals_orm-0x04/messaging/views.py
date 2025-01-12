@@ -56,3 +56,13 @@ def user_conversation_view(request):
     )
 
     return render(request, "user_converstation.html", {"messages": messages})
+
+
+@login_required
+def unread_messages_view(request):
+    '''
+    Displays unread messages for the logged-in user.
+    '''
+    unread_messages = Message.unread.for_user(request.user) # Use cutom manager
+
+    return render(request, "unread_messages.html", {"unread_messages": unread_messages})
