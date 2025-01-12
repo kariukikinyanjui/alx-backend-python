@@ -1,5 +1,6 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils.timezone import now
 from .models import Message, Notification, MessageHistory
 
 
@@ -11,15 +12,12 @@ def create_notification(sender, instance, created, **kwargs):
 
 @receiver(pre_save, sender=Message)
 def log_message_edit(sender, instance, **kwargs):
-    if instance.id:
-        try:
-            old_message = Message.objects.get(id=instance.id)
-            if old_message.content != instance.content:
-                # save old content to MessageHistory
-                MessageHistory.objects.create(
-                    message=old_message,
-                    old_content=old_message.content
-                )
-                instance.edited = True # Mark message as edited
-            except Message.DoesNotExist:
-                pass # Message does not exist yet, so no history is needed
+    if instance.pk: # Check if the message already exists
+        old_message = Message.objects.filter(pk=instance.pk).first()
+        if old_message and old_message.content != instance.content:
+            # Log the old content in MessageHistory
+            MessageHistory.objects.create(message=instance, old_content=old_message.content)
+            # Update edit-related fields
+            instance.edited = true
+            instance.edited_at = now() # Set the edit timestamp
+            # Ensure edited_by is set in the view where edits are handled

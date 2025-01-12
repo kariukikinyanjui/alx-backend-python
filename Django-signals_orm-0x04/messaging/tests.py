@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Message, Notification
+from .models import Message, Notification, MessageHistory
+from django.utils.timezone import now
 
 
 class MessagingTestCase(TestCase):
@@ -30,6 +31,8 @@ class MessageEditTestCase(TestCase):
     def test_message_edit_logs_history(self):
         # Update message content
         self.message.content = "Edited content"
+        self.message.edited_by = self.user1
+        self.message.edited_at = now()
         self.message.save()
 
         # Check if history is created
@@ -37,3 +40,5 @@ class MessageEditTestCase(TestCase):
         self.assertEqual(history.count(), 1)
         self.assertEqual(history.first().old_content, "Initial content")
         self.assertTrue(self.message.edited)
+        self.assertIsNotNone(self.message.edited_at)
+        self.assertEqual(self.message.edited_by, self.user1)
