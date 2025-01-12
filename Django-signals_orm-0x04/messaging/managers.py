@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class UnreadMessageManager(models.Manager):
+class UnreadMessagesManager(models.Manager):
     '''
     custom manager to filter unread messages for a specific user.
     '''
