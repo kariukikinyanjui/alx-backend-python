@@ -94,3 +94,19 @@ class ThreadedConversationTestCase(TestCase):
                 "sender", "receiver"
             ).prefetch_related("replies__sender", "replies__receiver")
             list(messages)  # Trigger evaluation
+
+
+class UnreadMessagesManagerTestCase(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="password1")
+        self.user2 = User.objects.create_user(username="user2", password="password2")
+
+        # Create messages
+        Message.objects.create(sender=self.user2, receiver=self.user1, content="Unread message 1", read=False)
+        Message.objects.create(sender=self.user2, receiver=self.user1, content="Unread message 2", read=False)
+        Message.objects.create(sender=self.user2, receiver=self.user1, content="Read message", read=True)
+
+    def test_unread_messages_for_user(self):
+        unread_messages = Message.unread.for_user(self.user1)
+        self.assertEqual(unread_messages.count(), 2)  # Only 2 unread messages
+        self.assertTrue(all(message.read is False for message in unread_messages))
