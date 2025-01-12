@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.timezone import now
 from .models import Message
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 
 def edit_message(request, message_id):
@@ -16,3 +18,13 @@ def edit_message(request, message_id):
         
         return redirect("view_message", message_id=message_id)
     return render(request, "edit_messasge.html", {"message": message})
+
+
+@login_required
+def delete_user(request):
+    '''
+    Deletes the currently logged-in user's account and cleans up related data.
+    '''
+    user = request.user
+    user.delete() # Triggers the post_delete signal
+    return redirect("home") # Redirect to the homepage after deletion
