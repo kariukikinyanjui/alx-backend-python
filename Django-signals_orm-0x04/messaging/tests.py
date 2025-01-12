@@ -110,3 +110,34 @@ class UnreadMessagesManagerTestCase(TestCase):
         unread_messages = Message.unread.for_user(self.user1)
         self.assertEqual(unread_messages.count(), 2)  # Only 2 unread messages
         self.assertTrue(all(message.read is False for message in unread_messages))
+
+
+from django.test import TestCase
+from django.contrib.auth.models import User
+from django.urls import reverse
+from .models import Message
+
+class ConversationCacheTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="user", password="password")
+        self.client.login(username="user", password="password")
+        self.conversation_id = 1
+
+        # Create messages
+        Message.objects.create(sender=self.user, receiver=self.user, content="Message 1", conversation_id=self.conversation_id)
+        Message.objects.create(sender=self.user, receiver=self.user, content="Message 2", conversation_id=self.conversation_id)
+
+    def test_cache_view(self):
+        url = reverse("conversation_view", args=[self.conversation_id])
+
+        # First request (not cached)
+        response1 = self.client.get(url)
+        self.assertEqual(response1.status_code, 200)
+
+        # Modify database (should not affect cached response)
+        Message.objects.create(sender=self.user, receiver=self.user, content="Message 3", conversation_id=self.conversation_id)
+
+        # Second request (cached)
+        response2 = self.client.get(url)
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response1.content, response2.content)  # Response should match due to cache
