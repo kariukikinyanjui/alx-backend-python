@@ -68,3 +68,13 @@ def unread_messages_view(request):
     unread_messages = Message.unread.filter(receiver=request.user, read=False).only("id", "content", "timestamp", "sender")
 
     return render(request, "unread_messages.html", {"unread_messages": unread_messages})
+
+
+@login_required
+@cache_page(60) # Cache the view for 60 seconds
+def conversation_view(request, conversation_id):
+    '''
+    Displays a list of messages in a conversatioin
+    '''
+    messages = Message.objects.filter(conversation_id=conversation_id).order_by("timestamp")
+    return render(request, "conversation.html", {"messages": messages})
