@@ -40,3 +40,19 @@ def conversation_view(request):
     ).prefetch_related("replies__sender", "replies__receiver")
 
     return render(request,"conversation.html", {"messages": messages})
+
+
+@login_required
+def user_conversation_view(request):
+    '''
+    Display the conversation for the logged-in user, including messages they sent and replies, optimized with select_related and prefetch_related.
+    '''
+    # Filter messages by the logged-in user as the sender
+    messages = Message.objects.filter(sender=request.user, parent_message=None).select_related(
+        "receiver"
+    ).prefetch_related(
+        "replies__sender", # Prefetch sender details of replies
+        "replies__receiver" # Prefetch receiver details of replies
+    )
+
+    return render(request, "user_converstation.html", {"messages": messages})
