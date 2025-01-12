@@ -12,6 +12,15 @@ class Message(models.Model):
     edited_by = models.ForeignKey(User, null=True, blank=True, related_name="edited_messages", on_delete=models.SET_NULL)
     parent_message = models.ForeignKey("self", null=True, blank=True, related_name="replies", on_delete=models.CASCADE)
 
+    def get_all_replies(self):
+        '''
+        Recursively fetches all replies to this message.
+        '''
+        replies = list(self.replies.all())
+        for reply in self.replies.all():
+            replies.extend(reply.get_all_replies())
+        return replies
+
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver} - {self.content[:20]}"
 
