@@ -1,6 +1,6 @@
 FROM python:3.10
 WORKDIR /app
-COPY  Requirements.txt .
+COPY  requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 # docker run -p 8000:8000 messaging_app
