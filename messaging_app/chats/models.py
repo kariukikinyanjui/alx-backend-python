@@ -4,57 +4,56 @@ import uuid
 
 
 class User(AbstractUser):
-    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
-    role = models.CharField(
-        max_length=10,
-        choices=[('guest', 'Guest'), ('host', 'Host'), ('admin', 'Admin')],
-        default='guest'
-    )
+    ROLE_CHOICES = [
+        ('guest', 'Guest'),
+        ('host', 'Host'),
+        ('admin', 'Admin'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True, blank=False, null=False)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    password = models.CharField(max_length=255)
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
 
+    username = None  # Remove username field, use email instead
 
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['email']),
-        ]
-        verbose_name = "User"
-        verbose_name_plural = "Users"
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []  # Removes email from REQUIRED_FIELDS
 
     def __str__(self):
         return self.email
 
 
 class Conversation(models.Model):
-    conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    participants = models.ManyToManyField(User, related_name='conversation')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    sent_at = models.DateTimeField(auto_now_add=True)
-
-
-    class Meta:
-        verbose_name = "Conversation"
-        verbose_name_plural = "Conversations"
+    participants = models.ManyToManyField(User, through='ConversationParticipant', related_name='conversations')
 
     def __str__(self):
-        return f"Conversation {self.conversation_id}"
+        return f"Conversation {self.id}"
+
+
+class ConversationParticipant(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('conversation', 'user')
+
+    def __str__(self):
+        return f"{self.user} in {self.conversation}"
 
 
 class Message(models.Model):
-    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='message_sent')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_sent')
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     message_body = models.TextField()
-    send_at = models.DateTimeField(auto_now_add=True)
-
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Message"
-        verbose_name_plural = "Messages"
+        ordering = ['sent_at']
 
     def __str__(self):
-        return f"Message {self.message_id} by {self.sender.email}"
+        return f"Message {self.id} by {self.sender}"
