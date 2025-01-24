@@ -4,10 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import User, Conversation, Message, ConversationParticipant
 from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsOwnerOrParticipant
+from .permissions import IsParticipantOfConversation
+
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     http_method_names = ['get', 'post']  # Only allow list and create
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at']
@@ -38,7 +41,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     http_method_names = ['get', 'post']  # Only allow list and create
     ordering = ['sent_at']
     ordering_fields = ['sent_at']
