@@ -46,3 +46,17 @@ class ConversationSerializer(serializers.ModelSerializer):
             'messages',
             'created_at'
         ]
+
+    def get_participants(self, obj):
+        participants = obj.participants_info.all().select_related('user')
+        return UserSerializer([p.user for p in participants], many=True).data
+
+    def get_messages(self, obj):
+        messages = obj.messages.all().select_related('sender')
+        return MessageSerializer(messages, many=True).data
+
+    def validate(self, data):
+        participants = self.initial_data.get('participants', [])
+        if len(participants) < 2:
+            raise serializers.ValidationError("A conversation must have at least 2 participants")
+        return data
