@@ -18,7 +18,7 @@ class UserSerializers(serializers.ModelSerializer):
         ]
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer(read_only=True)
+    sender = UserSerializers(read_only=True)
 
 
     class Meta:
