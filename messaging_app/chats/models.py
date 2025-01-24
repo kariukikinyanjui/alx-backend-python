@@ -10,10 +10,26 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Custom primary key renamed to user_id
+    user_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='User ID'
+    )
+
+    first_name = models.CharField(max_length=30, blank=False, null=False)
+    last_name = models.CharField(max_length=150, blank=False, null=False)
+    password = models.CharField(max_length=128)  # Matches Django's AbstractUser
+
     email = models.EmailField(unique=True, blank=False, null=False)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, blank=False, null=False)
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        blank=False,
+        null=False
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     username = None  # Remove username field, use email instead
@@ -26,29 +42,59 @@ class User(AbstractUser):
 
 
 class Conversation(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='Conversation ID'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    participants = models.ManyToManyField(User, through='ConversationParticipant', related_name='conversations')
+    participants = models.ManyToManyField(
+        User,
+        through='ConversationParticipant',
+        related_name='conversations'
+    )
 
     def __str__(self):
-        return f"Conversation {self.id}"
+        return f"Conversation {self.conversation_id}"
 
 
 class ConversationParticipant(models.Model):
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='participants_info'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='conversation_participations'
+    )
 
     class Meta:
         unique_together = ('conversation', 'user')
 
     def __str__(self):
-        return f"{self.user} in {self.conversation}"
+        return f"{self.user.email} in {self.conversation.conversation_id}"
 
 
 class Message(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_sent')
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    message_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='Message ID'
+    )
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='messages_sent'
+    )
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
     message_body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
 
@@ -56,4 +102,4 @@ class Message(models.Model):
         ordering = ['sent_at']
 
     def __str__(self):
-        return f"Message {self.id} by {self.sender}"
+        return f"Message {self.message_id} by {self.sender.email}"
