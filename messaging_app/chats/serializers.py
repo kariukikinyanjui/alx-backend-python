@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Message, Conversation
+from .models import User, Message, Conversation, ConversationParticipant
 
 
 class UserSerializers(serializers.ModelSerializer):
@@ -19,7 +19,6 @@ class UserSerializers(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
-    conversation = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
     class Meta:
@@ -34,8 +33,8 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UserSerializers(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True)
+    participants = serializers.SerializerMethodField()
+    messages = serializers.SerializerMethodField()
 
 
     class Meta:
