@@ -21,9 +21,9 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git(
-                    url: 'https://github.com/your-username/alx-backend-python.git',
+                    url: 'https://github.com/kariukikinyanjui/alx-backend-python.git',
                     credentialsId: 'github-credentials',
-                    branch: 'main'
+                    branch: 'git branch main'
                 )
                 dir(env.PROJECT_DIR) {
                     script {
@@ -51,8 +51,8 @@ pipeline {
                 dir(env.PROJECT_DIR) {
                     sh """
                         . ${env.VENV_NAME}/bin/activate
-                        python -m pip install --upgrade pip
-                        pip install -r requirements.txt
+                        python -m pip3 install --upgrade pip
+                        pip3 install -r requirements.txt
                     """
                 }
             }
