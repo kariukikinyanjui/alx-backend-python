@@ -77,6 +77,30 @@ pipeline {
         }
     }
 
+    stage('Build Docker Image') {
+            steps {
+                dir(env.PROJECT_DIR) {
+                    script {
+                        dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}",
+                            "-f ${DOCKERFILE_PATH} ."
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        dockerImage.push("${DOCKER_TAG}")
+                        dockerImage.push('latest')
+                    }
+                }
+            }
+        }
+    }
+
     post {
         always {
             cleanWs()
