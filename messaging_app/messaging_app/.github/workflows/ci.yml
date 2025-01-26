@@ -65,3 +65,9 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: 3306
         DJANGO_SETTINGS_MODULE: messaging_app.settings
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage.xml
