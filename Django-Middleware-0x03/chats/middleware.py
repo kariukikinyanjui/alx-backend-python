@@ -71,3 +71,20 @@ class OffensiveLanguageMiddleware:
                     self.request_counts[ip] = [current_time]
 
         return self.get_response(request)
+
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Protect admin_specific routes
+        if request.path.startswith('/api/admin/'):
+            if not request.user.is_authenticated:
+                return HttpResponseForbidden("Authentication required")
+
+            if request.user.role not in ['admin', 'moderator']:
+                return HttpResponseForbidden(
+                    "Admin/mod permissions required for this action"
+                )
+        return self.get_response(request)
